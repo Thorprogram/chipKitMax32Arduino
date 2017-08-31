@@ -4,6 +4,10 @@
 #include <Goldelox_Types4D.h>
 #include <Goldelox_LedDigitsDisplay.h>
 
+#include <IOShieldOled.h>
+
+
+
 #define DEBUG_PORT Serial
 #define uLCD144_PORT Serial1
 
@@ -32,13 +36,13 @@ void setup() {
 
   uLCD144_PORT.flush();
   uLCD144_PORT.end();
-  
+
   delay(3000);
   uLCD144_PORT.begin(9600);
-     
+
      Display.TimeLimit4D = 5000;
      Display.Callback4D = Callback;
-     
+
   Display.putstr("Starting\n") ;
   while(!Display.media_Init())
   {
@@ -50,49 +54,81 @@ void setup() {
 
   Display.media_SetAdd(iLeddigits1H, iLeddigits1L) ;      // point to the Leddigits1 Leddigits1 image
   Display.media_Image(4, 84) ;            // show all digits at 0, only do this once
-    
-    
-    Display.gfx_Cls();  
+
+
+    Display.gfx_Cls();
+
+    IOShieldOled.begin();
     delay(1000);
 }
 
 void loop() {
 
 int numx = random(999);
+int irow;
 
     DEBUG_PORT.println("Starting App");
-    digitalWrite(PIN_LED1, HIGH);
+//    digitalWrite(PIN_LED1, HIGH);
+     // Blink the display a bit.
+    IOShieldOled.displayOff();
+    delay(1500);
+    IOShieldOled.displayOn();
     delay(1000);
+    
+    //Clear the virtual buffer
+    IOShieldOled.clearBuffer();
+  
+     //Chosing Fill pattern 0
+    IOShieldOled.setFillPattern(IOShieldOled.getStdPattern(0));
+    //Turn automatic updating off
+    IOShieldOled.setCharUpdate(0);
+  
+    //Draw a rectangle over wrting then slide the rectagle
+    //down slowly displaying all writing
+    for (irow = 0; irow < IOShieldOled.rowMax; irow++)
+    {
+        IOShieldOled.clearBuffer();
+        IOShieldOled.setCursor(0, 0);
+        IOShieldOled.putString("chipKIT");
+        IOShieldOled.setCursor(0, 1);
+        IOShieldOled.putString("Basic I/O Shield");
+        IOShieldOled.setCursor(0, 2);
+        IOShieldOled.putString("by Digilent");
+    
+        IOShieldOled.moveTo(0, irow);
+        IOShieldOled.drawFillRect(127,31);
+        IOShieldOled.moveTo(0, irow);
+        IOShieldOled.drawLine(127,irow);
+        IOShieldOled.updateDisplay();
+        delay(100);
+     }
 
-     
      // Display.gfx_MoveTo(10, 100);
      // Display.putstr("Hello World\n");
      // Display.putstr("Hello again");
 
 LedDigitsDisplay(Display, numx, iiLeddigits1H, iiLeddigits1L, 4, 84, 4, 3, 29, 0) ;
-
-
-  
   //Display.gfx_BGcolour(BEIGE);  // Form1
-  
+
  // Display.txt_Height(2) ;
  // Display.txt_FGcolour(STEELBLUE) ;
  // Display.txt_BGcolour(BEIGE) ;
  // Display.gfx_MoveTo(84, 28) ;
  // Display.putstr("258") ;            // Label1 Label1
  // Display.txt_Height(1) ;
-  
+
  // Display.gfx_OutlineColour(SLATEGRAY) ;
  // Display.gfx_RectangleFilled(0, 0, 127, 25, BEIGE) ;  // Rectangle1
  // Display.gfx_OutlineColour(BLACK) ;
 
-    
+
  // Display.media_SetAdd(iStatictext1H, iStatictext1L) ;      // point to the Statictext1 Statictext1 image
  // Display.media_Image(0, 28) ;            // show image
 
 //  Display.gfx_MoveTo(10, 45);
 //  Display.putstr("my put string");
-  
-    digitalWrite(PIN_LED1, LOW);
+
+  //  digitalWrite(PIN_LED1, LOW);
     DEBUG_PORT.println("End App");
+    delay(1000);
 }
